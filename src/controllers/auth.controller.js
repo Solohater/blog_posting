@@ -45,7 +45,7 @@ export const registerUser = async (req, res) => {
       { expiresIn: "24h" }
     );
 
-    res.json({ token, user: newUser });
+    res.status(201).json({ token, user: newUser });
   } catch (err) {
     console.log(err);
     res.sendStatus(503);
@@ -74,7 +74,11 @@ export const loginUser = async (req, res) => {
       { expiresIn: "24h" }
     );
 
-    res.json({ token, user });
+    res.status(201).json({
+      token,
+      message: "You have logged in successfully",
+      userid: user.userid,
+    });
   } catch (err) {
     console.log(err);
     res.sendStatus(503);

@@ -17,11 +17,11 @@ export const addOrUpdateRating = async (req, res) => {
 
     if (existingRating) {
       const updated = await updateRating(existingRating.ratingid, ratingValue);
-      return res.json(updated);
+      return res.json({ rating: updated.ratingvalue });
     }
 
     const newRating = await createRating(blogId, req.userId, ratingValue);
-    res.json(newRating);
+    res.status(201).json({ rating: newRating.ratingvalue });
   } catch (err) {
     console.error(err);
     res.status(503).json({ message: "Server error" });

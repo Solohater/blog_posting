@@ -1,11 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
+import indexRoutes from "./routes/index.route.js"
 
-import authRoutes from "./routes/authRoutes.js";
-import blogRoutes from "./routes/blogRoutes.js";
-import commentsRoutes from "./routes/commentsRoute.js";
-import likeRoutes from "./routes/likeRoutes.js";
-import ratingRoutes from "./routes/ratingsRoute.js";
 
 
 dotenv.config();
@@ -24,21 +20,7 @@ app.use(express.json());
 
 /* ------------------ ROUTES ------------------ */
 
-// Auth (login/register)
-app.use("/auth", authRoutes);
-
-// Blogs (PUBLIC)
-app.use("/blogs", blogRoutes);
-
-// Likes → /blogs/:blogId/likes
-app.use("/blogs/:blogId/likes", likeRoutes);
-
-// Comments → /blogs/:blogId/comments
-app.use("/blogs", commentsRoutes);
-
-
-// Ratings → /blogs/:blogId/ratings
-app.use("/blogs/:blogId/ratings", ratingRoutes);
+app.use(indexRoutes)
 
 /* -------------------------------------------- */
 

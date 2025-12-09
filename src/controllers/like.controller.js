@@ -11,7 +11,7 @@ export const likeBlog = async (req, res) => {
     if (exists) return res.status(400).json({ message: "You already liked this blog" });
 
     const like = await addLike(blogId, req.userId);
-    res.json(like);
+    res.status(201).json({ message: "Likeed Blog" });
   } catch (err) {
     console.log(err);
     res.sendStatus(503);

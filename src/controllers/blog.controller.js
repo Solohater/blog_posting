@@ -9,8 +9,15 @@ import {
 
 export const getBlogs = async (req, res) => {
   try {
-    const blogs = await getAllBlogs();
-    res.json(blogs.rows);
+    const blogsResult = await getAllBlogs(); // full query result
+    const blogs = blogsResult.rows.map(blog => ({
+      blogid: blog.blogid,
+      userid: blog.userid,
+      title: blog.title,
+      content: blog.content,
+      tagid: blog.tagid
+    }));
+    res.json(blogs);
   } catch (err) {
     console.error(err);
     res.sendStatus(503);
@@ -32,7 +39,7 @@ export const createNewBlog = async (req, res) => {
 
   try {
     const result = await createBlog(title, content, tagId, req.userId);
-    res.json(result.rows[0]);
+    res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error(err);
     res.sendStatus(503);

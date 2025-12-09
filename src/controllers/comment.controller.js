@@ -12,7 +12,7 @@ export const addComment = async (req, res) => {
 
   try {
     const result = await insertComment(blogId, req.userId, content);
-    res.json(result);
+    res.status(201).json(result.rows[0]);
   } catch (err) {
     console.log(err);
     res.sendStatus(503);
