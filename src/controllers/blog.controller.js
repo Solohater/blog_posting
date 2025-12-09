@@ -34,38 +34,105 @@ export const getUserBlogs = async (req, res) => {
   }
 };
 
+// --------------------------- CREATE BLOG ---------------------------
 export const createNewBlog = async (req, res) => {
-  const { title, content, tagId } = req.body;
-
   try {
-    const result = await createBlog(title, content, tagId, req.userId);
-    res.status(201).json(result.rows[0]);
+    const allowedFields = ["title", "content", "tagId"];
+    const receivedFields = Object.keys(req.body);
+
+    // ❌ Reject extra/invalid fields
+    const invalidFields = receivedFields.filter(f => !allowedFields.includes(f));
+    if (invalidFields.length > 0) {
+      return res.status(400).json({
+        message: `Invalid fields: ${invalidFields.join(", ")}`,
+        allowed: allowedFields
+      });
+    }
+
+    const { title, content, tagId } = req.body;
+
+    // ---------- VALIDATION ----------
+    if (!title) return res.status(400).json({ message: "Title is required" });
+    if (!content) return res.status(400).json({ message: "Content is required" });
+    if (tagId === undefined || tagId === null)
+      return res.status(400).json({ message: "tagId is required" });
+
+    if (typeof title !== "string")
+      return res.status(400).json({ message: "Title must be a string" });
+
+    if (typeof content !== "string")
+      return res.status(400).json({ message: "Content must be a string" });
+
+    if (isNaN(Number(tagId)))
+      return res.status(400).json({ message: "tagId must be a number" });
+
+    // CREATE
+    const result = await createBlog(title.trim(), content.trim(), Number(tagId), req.userId);
+    return res.status(201).json(result.rows[0]);
+
   } catch (err) {
-    console.error(err);
-    res.sendStatus(503);
+    console.error("Create Blog Error:", err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
-export const updateExistingBlog = async (req, res) => {
-  const { id } = req.params;
-  const { title, content, tagId } = req.body;
 
+// --------------------------- UPDATE BLOG ---------------------------
+export const updateExistingBlog = async (req, res) => {
   try {
+    const { id } = req.params;
+
+    const allowedFields = ["title", "content", "tagId"];
+    const receivedFields = Object.keys(req.body);
+
+    // ❌ Reject extra fields
+    const invalidFields = receivedFields.filter(f => !allowedFields.includes(f));
+    if (invalidFields.length > 0) {
+      return res.status(400).json({
+        message: `Invalid fields: ${invalidFields.join(", ")}`,
+        allowed: allowedFields
+      });
+    }
+
+    const { title, content, tagId } = req.body;
+
+    // VALIDATION (optional fields but must be correct type)
+    if (title !== undefined && typeof title !== "string")
+      return res.status(400).json({ message: "Title must be a string" });
+
+    if (content !== undefined && typeof content !== "string")
+      return res.status(400).json({ message: "Content must be a string" });
+
+    if (tagId !== undefined && isNaN(Number(tagId)))
+      return res.status(400).json({ message: "tagId must be a number" });
+
+    // Check blog existence
     const { rows } = await findBlogById(id);
-    if (rows.length === 0) return res.status(404).json({ message: "Blog not found" });
+    if (rows.length === 0)
+      return res.status(404).json({ message: "Blog not found" });
 
     const blog = rows[0];
 
+    // Backend ownership check
     if (blog.userid !== req.userId)
       return res.status(403).json({ message: "Forbidden: only owner can update" });
 
-    const updated = await updateBlog(id, title, content, tagId);
-    res.json(updated.rows[0]);
+    // UPDATE BLOG
+    const updated = await updateBlog(
+      id,
+      title ?? blog.title,
+      content ?? blog.content,
+      tagId ?? blog.tagid
+    );
+
+    return res.json(updated.rows[0]);
+
   } catch (err) {
-    console.error(err);
-    res.sendStatus(503);
+    console.error("Update Blog Error:", err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
+
 
 export const deleteBlog = async (req, res) => {
   const { id } = req.params;

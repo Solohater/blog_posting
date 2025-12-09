@@ -1,24 +1,19 @@
 import express from "express";
 import { verifyToken } from "../middleware/authMiddleware.js";
-import {
-  addComment,
-  getComments,
-  updateComment,
-  deleteComment
-} from "../controllers/comment.controller.js";
+import { addComment, getComments, updateComment, deleteComment } from "../controllers/comment.controller.js";
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true }); // ← MUST HAVE
 
-// ADD COMMENT
-router.post("/:blogId/comments", verifyToken, addComment);
+// POST /blogs/:blogId/comments
+router.post("/", verifyToken, addComment);
 
-// GET COMMENTS
-router.get("/:blogId/comments", getComments);
+// GET /blogs/:blogId/comments
+router.get("/", getComments);
 
-// UPDATE COMMENT
-router.put("/:blogId/comments/:commentId", verifyToken, updateComment);
+// PUT /blogs/:blogId/comments/:commentId
+router.put("/:commentId", verifyToken, updateComment);
 
-// DELETE COMMENT
-router.delete("/:blogId/comments/:commentId", verifyToken, deleteComment);
+// DELETE /blogs/:blogId/comments/:commentId
+router.delete("/:commentId", verifyToken, deleteComment);
 
 export default router;

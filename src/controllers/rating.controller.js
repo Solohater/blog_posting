@@ -1,18 +1,38 @@
 import { findRating, createRating, updateRating } from "../models/rating.model.js";
 
 export const addOrUpdateRating = async (req, res) => {
-  const blogId = parseInt(req.params.blogId, 10);
-  const { ratingValue } = req.body;
-
-  if (!blogId || blogId <= 0) {
-    return res.status(400).json({ message: "Invalid blog id" });
-  }
-
-  if (!ratingValue || ratingValue < 1 || ratingValue > 5) {
-    return res.status(400).json({ message: "Rating must be 1–5" });
-  }
-
   try {
+    const blogId = parseInt(req.params.blogId, 10);
+
+    // ---------- VALIDATE BLOG ID ----------
+    if (isNaN(blogId) || blogId <= 0) {
+      return res.status(400).json({ message: "Invalid blog ID" });
+    }
+
+    // ---------- VALIDATE BODY ----------
+    const allowedFields = ["ratingValue"];
+    const receivedFields = Object.keys(req.body);
+
+    // Reject extra fields
+    const invalidFields = receivedFields.filter(f => !allowedFields.includes(f));
+    if (invalidFields.length > 0) {
+      return res.status(400).json({
+        message: `Invalid fields: ${invalidFields.join(", ")}`,
+        allowed: allowedFields
+      });
+    }
+
+    const { ratingValue } = req.body;
+
+    if (ratingValue === undefined) {
+      return res.status(400).json({ message: "ratingValue is required" });
+    }
+
+    if (!Number.isInteger(ratingValue) || ratingValue < 1 || ratingValue > 5) {
+      return res.status(400).json({ message: "ratingValue must be an integer between 1 and 5" });
+    }
+
+    // ---------- CHECK EXISTING RATING ----------
     const existingRating = await findRating(blogId, req.userId);
 
     if (existingRating) {
@@ -20,10 +40,12 @@ export const addOrUpdateRating = async (req, res) => {
       return res.json({ rating: updated.ratingvalue });
     }
 
+    // ---------- CREATE NEW RATING ----------
     const newRating = await createRating(blogId, req.userId, ratingValue);
-    res.status(201).json({ rating: newRating.ratingvalue });
+    return res.status(201).json({ rating: newRating.ratingvalue });
+
   } catch (err) {
-    console.error(err);
-    res.status(503).json({ message: "Server error" });
+    console.error("Rating Error:", err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
