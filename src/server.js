@@ -2,8 +2,6 @@ import express from "express";
 import dotenv from "dotenv";
 import indexRoutes from "./routes/index.route.js"
 
-
-
 dotenv.config();
 
 const app = express();
@@ -17,12 +15,10 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-
-/* ------------------ ROUTES ------------------ */
+//ROUTES 
 
 app.use(indexRoutes)
 
-/* -------------------------------------------- */
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

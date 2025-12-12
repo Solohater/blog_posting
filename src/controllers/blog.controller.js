@@ -34,13 +34,12 @@ export const getUserBlogs = async (req, res) => {
   }
 };
 
-// --------------------------- CREATE BLOG ---------------------------
 export const createNewBlog = async (req, res) => {
   try {
     const allowedFields = ["title", "content", "tagId"];
     const receivedFields = Object.keys(req.body);
 
-    // ❌ Reject extra/invalid fields
+    // Reject extra/invalid fields
     const invalidFields = receivedFields.filter(f => !allowedFields.includes(f));
     if (invalidFields.length > 0) {
       return res.status(400).json({
@@ -51,7 +50,7 @@ export const createNewBlog = async (req, res) => {
 
     const { title, content, tagId } = req.body;
 
-    // ---------- VALIDATION ----------
+    // VALIDATION
     if (!title) return res.status(400).json({ message: "Title is required" });
     if (!content) return res.status(400).json({ message: "Content is required" });
     if (tagId === undefined || tagId === null)
@@ -66,7 +65,6 @@ export const createNewBlog = async (req, res) => {
     if (isNaN(Number(tagId)))
       return res.status(400).json({ message: "tagId must be a number" });
 
-    // CREATE
     const result = await createBlog(title.trim(), content.trim(), Number(tagId), req.userId);
     return res.status(201).json(result.rows[0]);
 
@@ -76,8 +74,6 @@ export const createNewBlog = async (req, res) => {
   }
 };
 
-
-// --------------------------- UPDATE BLOG ---------------------------
 export const updateExistingBlog = async (req, res) => {
   try {
     const { id } = req.params;
@@ -85,7 +81,7 @@ export const updateExistingBlog = async (req, res) => {
     const allowedFields = ["title", "content", "tagId"];
     const receivedFields = Object.keys(req.body);
 
-    // ❌ Reject extra fields
+    // Reject extra fields
     const invalidFields = receivedFields.filter(f => !allowedFields.includes(f));
     if (invalidFields.length > 0) {
       return res.status(400).json({
@@ -117,7 +113,20 @@ export const updateExistingBlog = async (req, res) => {
     if (blog.userid !== req.userId)
       return res.status(403).json({ message: "Forbidden: only owner can update" });
 
-    // UPDATE BLOG
+    //update duplication check
+    const finalTitle = title ?? blog.title;
+    const finalContent = content ?? blog.content;
+    const finalTagId = tagId ?? blog.tagid;
+
+    const noChange =
+      finalTitle.trim() === blog.title &&
+      finalContent.trim() === blog.content &&
+      Number(finalTagId) === blog.tagid;
+
+    if (noChange) {
+      return res.status(200).json({ message: "Nothing updated" });
+    }
+    
     const updated = await updateBlog(
       id,
       title ?? blog.title,
@@ -132,7 +141,6 @@ export const updateExistingBlog = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-
 
 export const deleteBlog = async (req, res) => {
   const { id } = req.params;

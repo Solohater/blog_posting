@@ -1,4 +1,3 @@
-// controllers/auth.controller.js
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import {
@@ -15,12 +14,12 @@ import {
   searchBlogs
 } from "../models/user.model.js";
 
-// --------------------------- REGISTER ---------------------------
+
 export const registerUser = async (req, res) => {
   try {
     const { username, email, password, name, bio, role } = req.body;
 
-    // ---------- VALIDATION ----------
+    //VALIDATION 
     if (!username) return res.status(400).json({ message: "Username is required" });
     if (!email)    return res.status(400).json({ message: "Email is required" });
     if (!password) return res.status(400).json({ message: "Password is required" });
@@ -66,12 +65,11 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// --------------------------- LOGIN ---------------------------
 export const loginUser = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // ---------- STRICT FIELD CHECK ----------
+    // STRICT FIELD CHECK 
     const allowedFields = ["username", "password"];
     const bodyFields = Object.keys(req.body);
 
@@ -83,7 +81,7 @@ export const loginUser = async (req, res) => {
       }
     }
 
-    // ---------- VALIDATION ----------
+    // VALIDATION
     if (!username)
       return res.status(400).json({ message: "Username is required" });
 
@@ -96,7 +94,7 @@ export const loginUser = async (req, res) => {
     if (typeof password !== "string")
       return res.status(400).json({ message: "Password must be a string" });
 
-    // ---------- FETCH USER ----------
+    // FETCH USER 
     const { rows } = await findUserByUsername(username);
     if (rows.length === 0)
       return res.status(404).json({ message: "User not found" });
@@ -125,8 +123,6 @@ export const loginUser = async (req, res) => {
   }
 };
 
-
-// --------------------------- GET PROFILE ---------------------------
 export const getProfile = async (req, res) => {
   try {
     const userId = parseInt(req.userId, 10);
@@ -147,7 +143,6 @@ export const getProfile = async (req, res) => {
   }
 };
 
-// --------------------------- EDIT PROFILE ---------------------------
 export const editProfile = async (req, res) => {
   try {
     const userId = parseInt(req.userId, 10);
@@ -212,13 +207,12 @@ export const editProfile = async (req, res) => {
 };
 
 
-// --------------------------- FOLLOW ---------------------------
 export const follow = async (req, res) => {
   try {
     const targetUserId = parseInt(req.params.id, 10);
     const currentUserId = req.userId;
 
-    // ---------- VALIDATION ----------
+    // VALIDATION 
     if (isNaN(targetUserId))
       return res.status(400).json({ message: "Invalid target user ID" });
 
@@ -236,7 +230,6 @@ export const follow = async (req, res) => {
   }
 };
 
-// --------------------------- UNFOLLOW ---------------------------
 export const unfollow = async (req, res) => {
   try {
     const targetUserId = parseInt(req.params.id, 10);
@@ -259,7 +252,6 @@ export const unfollow = async (req, res) => {
   }
 };
 
-// --------------------------- SEARCH ---------------------------
 export const search = async (req, res) => {
   try {
     const q = req.query.q?.trim();

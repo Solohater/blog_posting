@@ -6,13 +6,12 @@ import {
   deleteCommentById
 } from "../models/comment.model.js";
 
-// --------------------------- ADD COMMENT ---------------------------
 export const addComment = async (req, res) => {
   try {
     const allowedFields = ["content"];
     const receivedFields = Object.keys(req.body);
 
-    // ❌ Reject invalid/extra fields
+    // Reject invalid/extra fields
     const invalidFields = receivedFields.filter(f => !allowedFields.includes(f));
     if (invalidFields.length > 0) {
       return res.status(400).json({
@@ -23,7 +22,7 @@ export const addComment = async (req, res) => {
 
     const { content } = req.body;
 
-    // ---------- VALIDATION ----------
+    // VALIDATION
     if (!content) {
       return res.status(400).json({ message: "Content is required" });
     }
@@ -36,7 +35,6 @@ export const addComment = async (req, res) => {
       return res.status(400).json({ message: "Content cannot be empty" });
     }
 
-    // INSERT COMMENT
     const result = await insertComment(req.params.blogId, req.userId, content.trim());
     return res.status(201).json(result);
 
@@ -59,7 +57,6 @@ export const getComments = async (req, res) => {
   }
 };
 
-// --------------------------- UPDATE COMMENT ---------------------------
 export const updateComment = async (req, res) => {
   try {
     const { commentId } = req.params;
@@ -67,7 +64,7 @@ export const updateComment = async (req, res) => {
     const allowedFields = ["content"];
     const receivedFields = Object.keys(req.body);
 
-    // ❌ Reject invalid/extra fields
+    // Reject invalid/extra fields
     const invalidFields = receivedFields.filter(f => !allowedFields.includes(f));
     if (invalidFields.length > 0) {
       return res.status(400).json({
@@ -103,7 +100,6 @@ export const updateComment = async (req, res) => {
       return res.status(403).json({ message: "Forbidden: You cannot edit this comment" });
     }
 
-    // UPDATE COMMENT
     const updated = await updateCommentById(commentId, content.trim());
     return res.json(updated);
 

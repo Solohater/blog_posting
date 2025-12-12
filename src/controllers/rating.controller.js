@@ -4,12 +4,12 @@ export const addOrUpdateRating = async (req, res) => {
   try {
     const blogId = parseInt(req.params.blogId, 10);
 
-    // ---------- VALIDATE BLOG ID ----------
+    // VALIDATION
     if (isNaN(blogId) || blogId <= 0) {
       return res.status(400).json({ message: "Invalid blog ID" });
     }
 
-    // ---------- VALIDATE BODY ----------
+    // VALIDATE BODY 
     const allowedFields = ["ratingValue"];
     const receivedFields = Object.keys(req.body);
 
@@ -32,7 +32,6 @@ export const addOrUpdateRating = async (req, res) => {
       return res.status(400).json({ message: "ratingValue must be an integer between 1 and 5" });
     }
 
-    // ---------- CHECK EXISTING RATING ----------
     const existingRating = await findRating(blogId, req.userId);
 
     if (existingRating) {
@@ -40,7 +39,6 @@ export const addOrUpdateRating = async (req, res) => {
       return res.json({ rating: updated.ratingvalue });
     }
 
-    // ---------- CREATE NEW RATING ----------
     const newRating = await createRating(blogId, req.userId, ratingValue);
     return res.status(201).json({ rating: newRating.ratingvalue });
 

@@ -9,7 +9,6 @@ const columns = {
   tagId: "tagid",
 };
 
-// ---------------- GET ALL BLOGS ----------------
 export const getAllBlogs = () => {
   return pool.query(`
     SELECT 
@@ -24,7 +23,6 @@ export const getAllBlogs = () => {
   `);
 };
 
-// ---------------- GET BLOGS BY USER ----------------
 export const getBlogsByUser = (userId) => {
   return pool.query(`
     SELECT 
@@ -40,7 +38,6 @@ export const getBlogsByUser = (userId) => {
   `, [userId]);
 };
 
-// ---------------- CREATE BLOG ----------------
 export const createBlog = (title, content, tagId, userId) => {
   return pool.query(
     `INSERT INTO ${table} 
@@ -51,7 +48,6 @@ export const createBlog = (title, content, tagId, userId) => {
   );
 };
 
-// ---------------- FIND BLOG BY ID ----------------
 export const findBlogById = (id) => {
   return pool.query(
     `SELECT * FROM ${table} WHERE ${columns.id} = $1`,
@@ -59,7 +55,6 @@ export const findBlogById = (id) => {
   );
 };
 
-// ---------------- UPDATE BLOG ----------------
 export const updateBlog = (id, title, content, tagId) => {
   return pool.query(
     `UPDATE ${table}
@@ -71,8 +66,7 @@ export const updateBlog = (id, title, content, tagId) => {
     [title, content, tagId || null, id]
   );
 };
-
-// ---------------- DELETE BLOG ----------------
+ 
 export const deleteBlogById = (id) => {
   return pool.query(
     `DELETE FROM ${table} WHERE ${columns.id} = $1`,

@@ -14,7 +14,6 @@ const columns = {
   following: "following",
 };
 
-// ---------------- FIND BY USERNAME OR EMAIL ----------------
 export function findUserByUsernameOrEmail(username, email) {
   return pool.query(
     `SELECT * FROM ${table} 
@@ -24,7 +23,6 @@ export function findUserByUsernameOrEmail(username, email) {
   );
 }
 
-// ---------------- CREATE USER ----------------
 export function createUser(username, email, hashedPassword, name, bio, role) {
   return pool.query(
     `INSERT INTO ${table} 
@@ -35,7 +33,6 @@ export function createUser(username, email, hashedPassword, name, bio, role) {
   );
 }
 
-// ---------------- FIND BY USERNAME ----------------
 export function findUserByUsername(username) {
   return pool.query(
     `SELECT * FROM ${table} WHERE ${columns.username} = $1`,
@@ -43,7 +40,6 @@ export function findUserByUsername(username) {
   );
 }
 
-// ---------------- GET USER BY ID ----------------
 export function getUserById(id) {
   return pool.query(
     `SELECT ${columns.id}, ${columns.name}, ${columns.email}, ${columns.bio}, ${columns.role}
@@ -53,7 +49,6 @@ export function getUserById(id) {
   );
 }
 
-// ---------------- UPDATE PROFILE ----------------
 export function updateUserProfile(name, bio, userId) {
   return pool.query(
     `UPDATE ${table}
@@ -65,7 +60,6 @@ export function updateUserProfile(name, bio, userId) {
   );
 }
 
-// ---------------- FOLLOW USER ----------------
 export function followUser(currentUserId, targetUserId) {
   return pool.query(
     `UPDATE ${table}
@@ -76,7 +70,6 @@ export function followUser(currentUserId, targetUserId) {
   );
 }
 
-// ---------------- ADD TO FOLLOWING ----------------
 export function addToFollowing(currentUserId, targetUserId) {
   return pool.query(
     `UPDATE ${table}
@@ -87,7 +80,6 @@ export function addToFollowing(currentUserId, targetUserId) {
   );
 }
 
-// ---------------- UNFOLLOW ----------------
 export function unfollowUser(currentUserId, targetUserId) {
   return pool.query(
     `UPDATE ${table}
@@ -97,7 +89,6 @@ export function unfollowUser(currentUserId, targetUserId) {
   );
 }
 
-// ---------------- REMOVE FROM FOLLOWING ----------------
 export function removeFromFollowing(currentUserId, targetUserId) {
   return pool.query(
     `UPDATE ${table}
@@ -107,7 +98,6 @@ export function removeFromFollowing(currentUserId, targetUserId) {
   );
 }
 
-// ---------------- SEARCH USERS ----------------
 export function searchUsers(searchTerm) {
   return pool.query(
     `SELECT ${columns.id}, ${columns.username}, ${columns.name}, ${columns.bio}
@@ -119,7 +109,6 @@ export function searchUsers(searchTerm) {
   );
 }
 
-// ---------------- SEARCH BLOGS ----------------
 export function searchBlogs(searchTerm) {
   return pool.query(
     `SELECT blogid, userid, title, content, tagid
