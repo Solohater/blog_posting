@@ -5,9 +5,19 @@ import {
   updateCommentById,
   deleteCommentById
 } from "../models/comment.model.js";
+import { findBlogById } from "../models/blog.model.js";
 
 export const addComment = async (req, res) => {
   try {
+    const blogid = parseInt(req.params.blogId, 10)
+
+    if(isNaN(blogid) || blogid <= 0) {
+      return res.status(400).json({message: "Invalid blog ID"})
+    }
+    const blog = await findBlogById(blogid)
+    if(!blog) {
+      return res.status(404).json({message: "Blog not found"})
+    }
     const allowedFields = ["content"];
     const receivedFields = Object.keys(req.body);
 
@@ -36,6 +46,9 @@ export const addComment = async (req, res) => {
     }
 
     const result = await insertComment(req.params.blogId, req.userId, content.trim());
+    if(!result){
+      res.status(404).json({message: "Blog not found"})
+    }
     return res.status(201).json(result);
 
   } catch (err) {

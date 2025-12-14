@@ -7,16 +7,18 @@ export const likeBlog = async (req, res) => {
   if (isNaN(blogId)) return res.status(400).json({ message: "Invalid blog id" });
 
   try {
-    //check if blog exist
+    
 
     const blog = await findBlogById(blogId);
     if (!blog) return res.status(404).json({ message: "Blog not found" });
-    //check if blog already liked
-
+    
     const exists = await checkLikeExists(blogId, req.userId);
     if (exists) return res.status(400).json({ message: "You already liked this blog" });
 
     const like = await addLike(blogId, req.userId);
+    if (!like) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
     res.status(201).json({ message: "Liked Blog" });
   } catch (err) {
     console.log(err);

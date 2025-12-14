@@ -11,11 +11,14 @@ export const findRating = async (blogId, userId) => {
 export const createRating = async (blogId, userId, ratingValue) => {
   const { rows } = await pool.query(
     `INSERT INTO blogratings (blogid, userid, ratingvalue)
-     VALUES ($1, $2, $3)
+     SELECT $1, $2, $3
+     WHERE EXISTS (
+      SELECT 1 FROM blogs WHERE blogid = $1
+     )
      RETURNING *`,
     [blogId, userId, ratingValue]
   );
-  return rows[0];
+  return rows[0] || null;
 };
 
 export const updateRating = async (ratingId, ratingValue) => {
@@ -26,5 +29,5 @@ export const updateRating = async (ratingId, ratingValue) => {
      RETURNING *`,
     [ratingValue, ratingId]
   );
-  return rows[0];
+  return rows[0] || null;
 };

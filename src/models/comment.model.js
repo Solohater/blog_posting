@@ -3,11 +3,14 @@ import pool from "../config/db.js";
 export const insertComment = async (blogId, userId, content) => {
   const { rows } = await pool.query(
     `INSERT INTO comments (blogid, userid, content)
-     VALUES ($1, $2, $3)
+     SELECT $1, $2, $3
+     WHERE EXISTS (
+      SELECT 1 FROM blogs WHERE blogid = $1
+     )
      RETURNING *`,
     [blogId, userId, content]
   );
-  return rows[0];
+  return rows[0] || null;
 };
 
 export const fetchCommentsByBlog = async (blogId) => {
@@ -38,7 +41,7 @@ export const updateCommentById = async (commentId, content) => {
      RETURNING *`,
     [content, commentId]
   );
-  return rows[0];
+  return rows[0] || null;
 };
 
 export const deleteCommentById = async (commentId) => {

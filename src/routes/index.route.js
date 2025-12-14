@@ -1,6 +1,5 @@
 import express from "express";
 
-// IMPORT ALL ROUTES HERE
 import authRoutes from './authRoutes.js'
 import blogRoutes from './blogRoutes.js'
 import likeRoutes from './likeRoutes.js'

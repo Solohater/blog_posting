@@ -1,4 +1,5 @@
 import { findRating, createRating, updateRating } from "../models/rating.model.js";
+import { findBlogById } from "../models/blog.model.js";
 
 export const addOrUpdateRating = async (req, res) => {
   try {
@@ -8,6 +9,9 @@ export const addOrUpdateRating = async (req, res) => {
     if (isNaN(blogId) || blogId <= 0) {
       return res.status(400).json({ message: "Invalid blog ID" });
     }
+
+    const blog = await findBlogById(blogId);
+        if (!blog) return res.status(404).json({ message: "Blog not found" });
 
     // VALIDATE BODY 
     const allowedFields = ["ratingValue"];
@@ -40,6 +44,9 @@ export const addOrUpdateRating = async (req, res) => {
     }
 
     const newRating = await createRating(blogId, req.userId, ratingValue);
+    if (!newRating) {
+      return res.status(404).json({message: "Blog not found"})
+    }
     return res.status(201).json({ rating: newRating.ratingvalue });
 
   } catch (err) {

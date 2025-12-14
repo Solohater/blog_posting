@@ -11,11 +11,12 @@ export const checkLikeExists = async (blogId, userId) => {
 export const addLike = async (blogId, userId) => {
   const { rows } = await pool.query(
     `INSERT INTO likes (blogid, userid)
-     VALUES ($1, $2)
+     SELECT $1, $2 WHERE EXISTS 
+     ( SELECT 1 FROM blogs WHERE blogid = $1)
      RETURNING *`,
     [blogId, userId]
   );
-  return rows[0];
+  return rows[0] || null;
 };
 
 export const removeLike = async (blogId, userId) => {

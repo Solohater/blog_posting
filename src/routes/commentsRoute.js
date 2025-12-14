@@ -2,7 +2,7 @@ import express from "express";
 import { verifyToken } from "../middleware/authMiddleware.js";
 import { addComment, getComments, updateComment, deleteComment } from "../controllers/comment.controller.js";
 
-const router = express.Router({ mergeParams: true }); // ← MUST HAVE
+const router = express.Router({ mergeParams: true }); 
 
 router.post("/", verifyToken, addComment);
 
