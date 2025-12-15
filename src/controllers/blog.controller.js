@@ -9,7 +9,7 @@ import {
 
 export const getBlogs = async (req, res) => {
   try {
-    const blogsResult = await getAllBlogs(); // full query result
+    const blogsResult = await getAllBlogs(); 
     const blogs = blogsResult.rows.map(blog => ({
       blogid: blog.blogid,
       userid: blog.userid,
@@ -81,7 +81,6 @@ export const updateExistingBlog = async (req, res) => {
     const allowedFields = ["title", "content", "tagId"];
     const receivedFields = Object.keys(req.body);
 
-    // Reject extra fields
     const invalidFields = receivedFields.filter(f => !allowedFields.includes(f));
     if (invalidFields.length > 0) {
       return res.status(400).json({
@@ -92,7 +91,6 @@ export const updateExistingBlog = async (req, res) => {
 
     const { title, content, tagId } = req.body;
 
-    // VALIDATION (optional fields but must be correct type)
     if (title !== undefined && typeof title !== "string")
       return res.status(400).json({ message: "Title must be a string" });
 
@@ -102,18 +100,15 @@ export const updateExistingBlog = async (req, res) => {
     if (tagId !== undefined && isNaN(Number(tagId)))
       return res.status(400).json({ message: "tagId must be a number" });
 
-    // Check blog existence
     const { rows } = await findBlogById(id);
     if (rows.length === 0)
       return res.status(404).json({ message: "Blog not found" });
 
     const blog = rows[0];
 
-    // Backend ownership check
     if (blog.userid !== req.userId)
       return res.status(403).json({ message: "Forbidden: only owner can update" });
 
-    //update duplication check
     const finalTitle = title ?? blog.title;
     const finalContent = content ?? blog.content;
     const finalTagId = tagId ?? blog.tagid;

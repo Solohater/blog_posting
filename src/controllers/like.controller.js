@@ -8,7 +8,6 @@ export const likeBlog = async (req, res) => {
 
   try {
     
-
     const blog = await findBlogById(blogId);
     if (!blog) return res.status(404).json({ message: "Blog not found" });
     

@@ -19,7 +19,6 @@ export const registerUser = async (req, res) => {
   try {
     const { username, email, password, name, bio, role } = req.body;
 
-    //VALIDATION 
     if (!username) return res.status(400).json({ message: "Username is required" });
     if (!email)    return res.status(400).json({ message: "Email is required" });
     if (!password) return res.status(400).json({ message: "Password is required" });
@@ -31,13 +30,11 @@ export const registerUser = async (req, res) => {
     if (password.length < 6)
       return res.status(400).json({ message: "Password must be at least 6 characters" });
 
-    // Check if username/email already exists
     const existingUsers = await findUserByUsernameOrEmail(username, email);
     if (existingUsers.rows.length > 0) {
       return res.status(400).json({ message: "Username or Email already exists" });
     }
 
-    // Create user
     const hashedPassword = bcrypt.hashSync(password, 8);
 
     const { rows } = await createUser(
@@ -69,7 +66,6 @@ export const loginUser = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // STRICT FIELD CHECK 
     const allowedFields = ["username", "password"];
     const bodyFields = Object.keys(req.body);
 
@@ -81,7 +77,6 @@ export const loginUser = async (req, res) => {
       }
     }
 
-    // VALIDATION
     if (!username)
       return res.status(400).json({ message: "Username is required" });
 
@@ -94,7 +89,6 @@ export const loginUser = async (req, res) => {
     if (typeof password !== "string")
       return res.status(400).json({ message: "Password must be a string" });
 
-    // FETCH USER 
     const { rows } = await findUserByUsername(username);
     if (rows.length === 0)
       return res.status(404).json({ message: "User not found" });
@@ -154,12 +148,10 @@ export const editProfile = async (req, res) => {
     const allowedFields = ["name", "bio"];
     const payload = {};
 
-    // Only accept allowed fields
     for (const key of allowedFields) {
       if (req.body[key] !== undefined) payload[key] = req.body[key];
     }
 
-    // Reject unknown fields
     const unknownKeys = Object.keys(req.body).filter(
       key => !allowedFields.includes(key)
     );
@@ -170,12 +162,10 @@ export const editProfile = async (req, res) => {
       });
     }
 
-    // Must send at least one allowed field
     if (Object.keys(payload).length === 0) {
       return res.status(400).json({ message: "No valid fields provided" });
     }
 
-    // Validation checks
     if (payload.name !== undefined) {
       if (typeof payload.name !== "string")
         return res.status(400).json({ message: "Name must be a string" });
@@ -192,7 +182,6 @@ export const editProfile = async (req, res) => {
         return res.status(400).json({ message: "Bio cannot exceed 300 characters" });
     }
 
-    // SQL update only for fields that exist
     const { rows } = await updateUserProfile(payload, userId);
 
     return res.status(200).json({
@@ -212,7 +201,6 @@ export const follow = async (req, res) => {
     const targetUserId = parseInt(req.params.id, 10);
     const currentUserId = req.userId;
 
-    // VALIDATION 
     if (isNaN(targetUserId))
       return res.status(400).json({ message: "Invalid target user ID" });
 

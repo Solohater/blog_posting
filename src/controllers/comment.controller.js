@@ -21,7 +21,6 @@ export const addComment = async (req, res) => {
     const allowedFields = ["content"];
     const receivedFields = Object.keys(req.body);
 
-    // Reject invalid/extra fields
     const invalidFields = receivedFields.filter(f => !allowedFields.includes(f));
     if (invalidFields.length > 0) {
       return res.status(400).json({
@@ -57,7 +56,6 @@ export const addComment = async (req, res) => {
   }
 };
 
-
 export const getComments = async (req, res) => {
   const { blogId } = req.params;
 
@@ -77,7 +75,6 @@ export const updateComment = async (req, res) => {
     const allowedFields = ["content"];
     const receivedFields = Object.keys(req.body);
 
-    // Reject invalid/extra fields
     const invalidFields = receivedFields.filter(f => !allowedFields.includes(f));
     if (invalidFields.length > 0) {
       return res.status(400).json({
@@ -101,14 +98,12 @@ export const updateComment = async (req, res) => {
       return res.status(400).json({ message: "Content cannot be empty" });
     }
 
-    // CHECK IF COMMENT EXISTS
     const comment = await findCommentById(commentId);
 
     if (!comment) {
       return res.status(404).json({ message: "Comment not found" });
     }
 
-    // PERMISSION CHECK
     if (comment.userid !== req.userId) {
       return res.status(403).json({ message: "Forbidden: You cannot edit this comment" });
     }
@@ -121,7 +116,6 @@ export const updateComment = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-
 
 export const deleteComment = async (req, res) => {
   const { commentId } = req.params;
