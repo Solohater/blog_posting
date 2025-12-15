@@ -1,30 +1,37 @@
 import pool from "../config/db.js";
 
-export const checkLikeExists = async (blogId, userId) => {
-  const { rows } = await pool.query(
-    `SELECT * FROM likes WHERE blogid = $1 AND userid = $2`,
-    [blogId, userId]
-  );
-  return rows.length > 0;
+const table = "likes";
+
+const columns = {
+  blogId: "blogid",
+  userId: "userid",
 };
 
-export const addLike = async (blogId, userId) => {
+export async function checkLikeExists(blogId, userId) {
   const { rows } = await pool.query(
-    `INSERT INTO likes (blogid, userid)
-     SELECT $1, $2 WHERE EXISTS 
-     ( SELECT 1 FROM blogs WHERE blogid = $1)
+    `SELECT * FROM ${table} WHERE ${columns.blogId} = $1 AND ${columns.userId} = $2`,
+    [blogId, userId]
+  );
+  return rows.length > 0; // returns true if like exists, false otherwise
+}
+
+export async function addLike(blogId, userId) {
+  const { rows } = await pool.query(
+    `INSERT INTO ${table} (${columns.blogId}, ${columns.userId})
+     SELECT $1, $2
+     WHERE EXISTS (SELECT 1 FROM blogs WHERE blogid = $1)
      RETURNING *`,
     [blogId, userId]
   );
-  return rows[0] || null;
-};
+  return rows[0] || null; // returns the newly inserted like or null if blog doesn't exist
+}
 
-export const removeLike = async (blogId, userId) => {
+export async function removeLike(blogId, userId) {
   const { rows } = await pool.query(
-    `DELETE FROM likes
-     WHERE blogid = $1 AND userid = $2
+    `DELETE FROM ${table}
+     WHERE ${columns.blogId} = $1 AND ${columns.userId} = $2
      RETURNING *`,
     [blogId, userId]
   );
-  return rows[0] || null;
-};
+  return rows[0] || null; // returns the removed like or null if it didn't exist
+}
