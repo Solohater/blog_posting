@@ -1,21 +1,9 @@
 {
-  "name": "chapter_4",
-  "version": "1.0.0",
-  "description": "A full stack Blog application",
-  "main": "index.js",
-  "type": "module",
+  "name": "blog_posting",
+  "private": true,
   "scripts": {
-    "dev": "node --watch --env-file=.env --experimental-strip-types --experimental-sqlite ./src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "dotenv": "^17.2.3",
-    "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "pg": "^8.16.3"
+    "dev:api": "npm run dev --prefix api",
+    "dev:web": "npm run dev --prefix web",
+    "dev": "npm run dev:api & npm run dev:web"
   }
 }
