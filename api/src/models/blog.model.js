@@ -8,6 +8,7 @@ const columns = {
   content: "content",
   tagId: "tagid",
   status: "status",
+  filePath: "file_path",
 };
 
 function buildBlogQuery(whereClause = "1=1", order = "b.blogid DESC") {
@@ -42,13 +43,13 @@ export const getPendingBlogsForReviewer = () => {
   return pool.query(buildBlogQuery(`b.status = 'pending'`));
 };
 
-export const createBlog = (title, content, tagId, userId) => {
+export const createBlog = (title, content, tagId, userId, filePath) => {
   return pool.query(
     `INSERT INTO ${table}
-       (${columns.title}, ${columns.content}, ${columns.tagId}, ${columns.userId}, ${columns.status})
-     VALUES ($1, $2, $3, $4, 'pending')
+       (${columns.title}, ${columns.content}, ${columns.tagId}, ${columns.userId}, ${columns.status}, ${columns.filePath})
+     VALUES ($1, $2, $3, $4, 'pending', $5)
      RETURNING *`,
-    [title, content, tagId || null, userId]
+    [title, content, tagId || null, userId, filePath || null]
   );
 };
 
@@ -56,13 +57,13 @@ export const findBlogById = (id) => {
   return pool.query(`SELECT * FROM ${table} WHERE ${columns.id} = $1`, [id]);
 };
 
-export const updateBlog = (id, title, content, tagId) => {
+export const updateBlog = (id, title, content, tagId, filePath) => {
   return pool.query(
     `UPDATE ${table}
-     SET ${columns.title} = $1, ${columns.content} = $2, ${columns.tagId} = $3, ${columns.status} = 'pending'
-     WHERE ${columns.id} = $4
+     SET ${columns.title} = $1, ${columns.content} = $2, ${columns.tagId} = $3, ${columns.filePath} = $4, ${columns.status} = 'pending'
+     WHERE ${columns.id} = $5
      RETURNING *`,
-    [title, content, tagId || null, id]
+    [title, content, tagId || null, filePath || null, id]
   );
 };
 
@@ -72,7 +73,7 @@ export const deleteBlogById = (id) => {
 
 export const reviewBlog = (id, status) => {
   return pool.query(
-    `UPDATE ${table} SET ${columns.status} = $1 WHERE ${columns.id} = $2 RETURNING *`,
+    `UPDATE ${table} SET ${columns.status} = $1, reviewed_at = NOW() WHERE ${columns.id} = $2 RETURNING *`,
     [status, id]
   );
 };

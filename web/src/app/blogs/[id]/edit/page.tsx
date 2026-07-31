@@ -5,37 +5,68 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useParams, useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
+import type { Tag } from "@/types";
 
 export default function EditBlogPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const router = useRouter();
   const [form, setForm] = useState({ title: "", content: "", tagId: "" });
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [existingFile, setExistingFile] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [forbidden, setForbidden] = useState(false);
+  const [tags, setTags] = useState<Tag[]>([]);
 
   useEffect(() => {
-    api.getMyBlogs().then((blogs) => {
-      const blog = blogs.find((b) => b.blogid === Number(id));
-      if (blog) {
-        if (blog.status !== "pending") {
-          setForbidden(true);
-        } else {
-          setForm({ title: blog.title, content: blog.content, tagId: String(blog.tagid) });
-        }
+    api.getTags().then(setTags).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    api.getBlog(Number(id)).then((blog) => {
+      if (blog.userid !== user?.userid) {
+        setForbidden(true);
+      } else if (blog.status !== "pending") {
+        setForbidden(true);
+      } else {
+        setForm({ title: blog.title, content: blog.content, tagId: String(blog.tagid || "") });
+        setExistingFile(blog.filePath || null);
       }
       setLoading(false);
     }).catch(() => setLoading(false));
-  }, [id]);
+  }, [id, user]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setFile(f);
+    setUploading(true);
+    setError("");
+    try {
+      const result = await api.uploadFile(f);
+      setFileUrl(result.fileUrl);
+    } catch (err: any) {
+      setError(err.message);
+      setFile(null);
+    }
+    setUploading(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSaving(true);
     try {
-      await api.updateBlog(Number(id), { ...form, tagId: Number(form.tagId) });
+      await api.updateBlog(Number(id), {
+        title: form.title,
+        content: form.content,
+        tagId: form.tagId ? Number(form.tagId) : undefined,
+        fileUrl: fileUrl || existingFile || undefined,
+      });
       router.push(`/blogs/${id}`);
     } catch (err: any) {
       setError(err.message);
@@ -93,18 +124,36 @@ export default function EditBlogPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Tag ID</label>
-              <input
-                type="number"
-                placeholder="Enter tag ID"
+              <label className="block text-sm font-medium text-foreground mb-1">Tag</label>
+              <select
                 value={form.tagId}
                 onChange={(e) => setForm({ ...form, tagId: e.target.value })}
-                className="border border-border rounded-lg w-full px-3 py-2.5 text-sm bg-background text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary"
-                required
+                className="border border-border rounded-lg w-full px-3 py-2.5 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="">Select a tag</option>
+                {tags.map((t) => (
+                  <option key={t.tagid} value={t.tagid}>{t.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Attach File (PDF, Word, Excel, etc.)</label>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg"
+                onChange={handleFileChange}
+                className="border border-border rounded-lg w-full px-3 py-2 text-sm bg-background text-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-primary file:text-white file:text-sm file:font-medium hover:file:opacity-90"
               />
+              {uploading && <p className="text-xs text-muted mt-1">Uploading...</p>}
+              {fileUrl && file && (
+                <p className="text-xs text-success mt-1">Uploaded: {file.name}</p>
+              )}
+              {existingFile && !fileUrl && (
+                <p className="text-xs text-muted mt-1">Current file attached</p>
+              )}
             </div>
             <div className="flex gap-2 pt-2">
-              <button type="submit" disabled={saving} className="bg-primary text-white px-6 py-2.5 rounded-lg font-medium hover:bg-primary-hover transition-colors disabled:opacity-50">
+              <button type="submit" disabled={saving || uploading} className="bg-primary text-white px-6 py-2.5 rounded-lg font-medium hover:bg-primary-hover transition-colors disabled:opacity-50">
                 {saving ? "Saving..." : "Save Changes"}
               </button>
               <button type="button" onClick={() => router.back()} className="border border-border px-6 py-2.5 rounded-lg text-sm text-muted hover:bg-card-hover transition-colors">

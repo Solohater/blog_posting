@@ -16,12 +16,12 @@ export default function BlogDetailPage() {
   const router = useRouter();
   const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showPreview, setShowPreview] = useState(false);
 
   const fetchBlog = async () => {
     try {
-      const blogs = await api.getMyBlogs();
-      const found = blogs.find((b) => b.blogid === Number(id));
-      setBlog(found || null);
+      const data = await api.getBlog(Number(id));
+      setBlog(data);
     } catch { /* ignore */ }
     setLoading(false);
   };
@@ -34,6 +34,27 @@ export default function BlogDetailPage() {
       await api.deleteBlog(Number(id));
       router.push("/");
     } catch { /* ignore */ }
+  };
+
+  const isPdf = (path: string) => /\.pdf$/i.test(path);
+  const isImage = (path: string) => /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(path);
+  const isOffice = (path: string) => /\.(doc|docx|xls|xlsx|ppt|pptx)$/i.test(path);
+  const isText = (path: string) => /\.(txt|csv)$/i.test(path);
+
+  const getPreviewType = (path: string) => {
+    if (isPdf(path)) return "pdf";
+    if (isImage(path)) return "image";
+    if (isText(path)) return "text";
+    if (isOffice(path)) return "office";
+    return "other";
+  };
+
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "";
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      year: "numeric", month: "short", day: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    });
   };
 
   if (loading) return (
@@ -59,6 +80,13 @@ export default function BlogDetailPage() {
   const isOwner = user && user.userid === blog.userid;
   const canEdit = isOwner && blog.status === "pending";
 
+  const fileUrl = blog.filePath || null;
+  const previewType = fileUrl ? getPreviewType(fileUrl) : null;
+
+  const googleDocsViewer = fileUrl && isOffice(fileUrl)
+    ? `https://docs.google.com/viewer?url=${encodeURIComponent(window.location.origin + fileUrl)}&embedded=true`
+    : null;
+
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-card border border-border rounded-2xl shadow-sm p-6">
@@ -78,9 +106,65 @@ export default function BlogDetailPage() {
             By {blog.user.name || blog.user.username}
           </Link>
         )}
-        <p className="text-muted text-sm mt-1">Tag #{blog.tagid}</p>
+        <div className="flex gap-4 text-xs text-muted mt-1">
+          {blog.createdAt && <span>Created: {formatDate(blog.createdAt)}</span>}
+          {blog.reviewedAt && <span>Reviewed: {formatDate(blog.reviewedAt)}</span>}
+        </div>
+        {blog.tagid && (
+          <p className="text-muted text-sm mt-1">Tag #{blog.tagid}</p>
+        )}
 
         <div className="mt-6 whitespace-pre-wrap text-foreground leading-relaxed">{blog.content}</div>
+
+        {fileUrl && (
+          <div className="mt-4 pt-4 border-t border-border flex items-center gap-3">
+            <a
+              href={fileUrl}
+              download
+              className="inline-flex items-center gap-1.5 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Download
+            </a>
+            <button
+              onClick={() => setShowPreview(!showPreview)}
+              className="inline-flex items-center gap-1.5 border border-border px-4 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-card-hover transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              {showPreview ? "Close" : "Preview"}
+            </button>
+          </div>
+        )}
+
+        {showPreview && fileUrl && (
+          <div className="mt-4 border border-border rounded-xl overflow-hidden">
+            {previewType === "pdf" && (
+              <iframe src={fileUrl} className="w-full h-[500px]" title="PDF Preview" />
+            )}
+            {previewType === "image" && (
+              <img src={fileUrl} alt="Preview" className="w-full max-h-[500px] object-contain" />
+            )}
+            {previewType === "text" && (
+              <object data={fileUrl} type="text/plain" className="w-full h-[400px] bg-white rounded-lg">
+                <a href={fileUrl} download className="text-primary underline">Download to view</a>
+              </object>
+            )}
+            {previewType === "office" && googleDocsViewer && (
+              <iframe src={googleDocsViewer} className="w-full h-[500px]" title="Document Preview" />
+            )}
+            {previewType === "other" && (
+              <div className="p-6 text-center text-muted">
+                <p className="mb-2">Preview not available for this file type.</p>
+                <a href={fileUrl} download className="text-primary hover:underline text-sm">Download to view</a>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="flex items-center gap-6 mt-6 pt-4 border-t border-border">
           <LikeButton blogId={blog.blogid} initialCount={likeCount} />

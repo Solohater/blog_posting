@@ -5,12 +5,15 @@ import blogRoutes from './blogRoutes.js'
 import likeRoutes from './likeRoutes.js'
 import commentsRoutes from './commentsRoute.js'
 import ratingRoutes from './ratingsRoute.js'
+import tagRoutes from './tagRoutes.js'
 
 const router = express.Router();
 
 router.use("/auth", authRoutes);
 
 router.use("/blogs", blogRoutes);
+
+router.use("/tags", tagRoutes);
 
 router.use("/blogs/:blogId/likes", likeRoutes);
 

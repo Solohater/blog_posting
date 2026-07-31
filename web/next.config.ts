@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
         source: "/api/:path*",
         destination: `${process.env.API_URL || "http://localhost:3000"}/:path*`,
       },
+      {
+        source: "/uploads/:path*",
+        destination: `${process.env.API_URL || "http://localhost:3000"}/uploads/:path*`,
+      },
     ];
   },
 };

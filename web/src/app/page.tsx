@@ -25,6 +25,7 @@ export default function Home() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) { router.push("/login"); return; }
+    if (user.role === "REVIEWER") { router.push("/review"); return; }
 
     setLoading(true);
     setError("");

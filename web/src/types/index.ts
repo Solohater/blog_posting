@@ -14,10 +14,19 @@ export interface Blog {
   content: string;
   tagid: number;
   status?: string;
+  filePath?: string;
+  createdAt?: string;
+  reviewedAt?: string;
   user?: User;
   comments?: Comment[];
   likes?: Like[];
   ratings?: Rating[];
+}
+
+export interface Tag {
+  tagid: number;
+  name: string;
+  description: string;
 }
 
 export interface Comment {

@@ -4,6 +4,7 @@ import {
   getMyDocs,
   getAllDocs,
   getPendingDocs,
+  getBlogById,
   createNewBlog,
   updateExistingBlog,
   deleteBlog,
@@ -16,6 +17,7 @@ const router = express.Router();
 router.get("/", verifyToken, getMyDocs);
 router.get("/all", verifyToken, requireReviewer, getAllDocs);
 router.get("/pending", verifyToken, requireReviewer, getPendingDocs);
+router.get("/:id", verifyToken, getBlogById);
 router.post("/", verifyToken, createNewBlog);
 router.put("/:id", verifyToken, updateExistingBlog);
 router.delete("/:id", verifyToken, deleteBlog);

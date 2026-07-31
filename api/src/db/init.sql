@@ -10,19 +10,52 @@ CREATE TABLE IF NOT EXISTS users (
   following INTEGER[] DEFAULT '{}'
 );
 
+CREATE TABLE IF NOT EXISTS tags (
+  tagid SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT
+);
+
+INSERT INTO tags (name, description) VALUES
+  ('Technology', 'Tech-related articles and tutorials'),
+  ('Science', 'Scientific discoveries and research'),
+  ('Health', 'Health and wellness topics'),
+  ('Education', 'Educational content and resources'),
+  ('Business', 'Business and entrepreneurship'),
+  ('Lifestyle', 'Lifestyle and personal development')
+ON CONFLICT (name) DO NOTHING;
+
 CREATE TABLE IF NOT EXISTS blogs (
   blogid SERIAL PRIMARY KEY,
   userid INTEGER NOT NULL REFERENCES users(userid) ON DELETE CASCADE,
   title VARCHAR(255) NOT NULL,
   content TEXT NOT NULL,
-  tagid INTEGER,
-  status VARCHAR(20) DEFAULT 'pending'
+  tagid INTEGER REFERENCES tags(tagid),
+  status VARCHAR(20) DEFAULT 'pending',
+  file_path VARCHAR(500),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  reviewed_at TIMESTAMPTZ
 );
 
 DO $$ BEGIN IF NOT EXISTS (
   SELECT 1 FROM information_schema.columns
   WHERE table_name = 'blogs' AND column_name = 'status'
 ) THEN ALTER TABLE blogs ADD COLUMN status VARCHAR(20) DEFAULT 'pending'; END IF; END $$;
+
+DO $$ BEGIN IF NOT EXISTS (
+  SELECT 1 FROM information_schema.columns
+  WHERE table_name = 'blogs' AND column_name = 'file_path'
+) THEN ALTER TABLE blogs ADD COLUMN file_path VARCHAR(500); END IF; END $$;
+
+DO $$ BEGIN IF NOT EXISTS (
+  SELECT 1 FROM information_schema.columns
+  WHERE table_name = 'blogs' AND column_name = 'created_at'
+) THEN ALTER TABLE blogs ADD COLUMN created_at TIMESTAMPTZ DEFAULT NOW(); END IF; END $$;
+
+DO $$ BEGIN IF NOT EXISTS (
+  SELECT 1 FROM information_schema.columns
+  WHERE table_name = 'blogs' AND column_name = 'reviewed_at'
+) THEN ALTER TABLE blogs ADD COLUMN reviewed_at TIMESTAMPTZ; END IF; END $$;
 
 CREATE TABLE IF NOT EXISTS comments (
   commentid SERIAL PRIMARY KEY,

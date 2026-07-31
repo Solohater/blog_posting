@@ -27,7 +27,7 @@ export default function Navbar() {
           <Link href="/" className="font-bold text-lg text-primary hover:text-primary-hover">
             DocReview
           </Link>
-          {user && (
+          {user && user.role !== "REVIEWER" && (
             <Link href="/" className="text-sm text-muted hover:text-foreground transition-colors hidden sm:block">
               My Docs
             </Link>
@@ -84,9 +84,11 @@ export default function Navbar() {
                   </Link>
                 </>
               )}
-              <Link href="/blogs/new" className="bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary-hover transition-colors">
-                New Doc
-              </Link>
+              {user.role !== "REVIEWER" && (
+                <Link href="/blogs/new" className="bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary-hover transition-colors">
+                  New Doc
+                </Link>
+              )}
               <Link href="/profile" className="text-foreground hover:text-primary font-medium">
                 {user.name || user.username}
               </Link>
@@ -139,8 +141,12 @@ export default function Navbar() {
           </div>
           {user ? (
             <>
-              <Link href="/" className="block py-1 text-foreground" onClick={() => setMenuOpen(false)}>My Docs</Link>
-              <Link href="/blogs/new" className="block py-1 text-foreground" onClick={() => setMenuOpen(false)}>New Doc</Link>
+              {user.role !== "REVIEWER" && (
+                <Link href="/" className="block py-1 text-foreground" onClick={() => setMenuOpen(false)}>My Docs</Link>
+              )}
+              {user.role !== "REVIEWER" && (
+                <Link href="/blogs/new" className="block py-1 text-foreground" onClick={() => setMenuOpen(false)}>New Doc</Link>
+              )}
               <Link href="/profile" className="block py-1 text-foreground" onClick={() => setMenuOpen(false)}>Profile</Link>
               {user.role === "REVIEWER" && (
                 <>

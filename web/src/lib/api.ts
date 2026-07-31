@@ -6,9 +6,11 @@ async function request<T>(
 ): Promise<T> {
   const token = localStorage.getItem("token");
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
     ...(options.headers as Record<string, string>),
   };
+  if (!(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const res = await fetch(`${BASE}${endpoint}`, { ...options, headers });
@@ -44,9 +46,23 @@ export const api = {
 
   search: (q: string) => request<import("@/types").SearchResult>(`/auth/search?q=${encodeURIComponent(q)}`),
 
+  // Tags
+  getTags: () => request<import("@/types").Tag[]>("/tags"),
+
+  // Upload
+  uploadFile: (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return request<{ fileUrl: string; originalName: string; mimetype: string }>("/upload", { method: "POST", body: formData });
+  },
+
   // Blogs (user's own)
   getMyBlogs: (status?: string) =>
     request<import("@/types").Blog[]>(`/blogs${status ? `?status=${status}` : ""}`),
+
+  // Single blog
+  getBlog: (id: number) =>
+    request<import("@/types").Blog>(`/blogs/${id}`),
 
   // Blogs (reviewer)
   getAllBlogs: (status?: string) =>
@@ -55,10 +71,10 @@ export const api = {
   getPendingBlogs: () =>
     request<import("@/types").Blog[]>("/blogs/pending"),
 
-  createBlog: (body: { title: string; content: string; tagId: number }) =>
+  createBlog: (body: { title: string; content: string; tagId?: number; fileUrl?: string }) =>
     request<import("@/types").Blog>("/blogs", { method: "POST", body: JSON.stringify(body) }),
 
-  updateBlog: (id: number, body: { title?: string; content?: string; tagId?: number }) =>
+  updateBlog: (id: number, body: { title?: string; content?: string; tagId?: number; fileUrl?: string }) =>
     request<import("@/types").Blog>(`/blogs/${id}`, { method: "PUT", body: JSON.stringify(body) }),
 
   deleteBlog: (id: number) => request<{ message: string }>(`/blogs/${id}`, { method: "DELETE" }),
