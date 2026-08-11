@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: blog-api
+    runtime: node
+    plan: free
+    rootDir: api
+    buildCommand: npm ci --omit=dev
+    startCommand: node --experimental-strip-types src/server.js
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: blog-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        sync: false
+      - key: NODE_VERSION
+        value: 22.12.0
+
+databases:
+  - name: blog-db
+    plan: free
+    databaseName: blogdb
+    ipAllowList: []
